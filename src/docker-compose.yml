@@ -34,3 +34,10 @@ services:
       context: .
       dockerfile: services/Basket/Basket.API/Dockerfile 
 
+
+  discount.api:
+    image: ${DOCKER_REGISTRY-}discountapi
+    build:
+      context: .
+      dockerfile: services/Discount/Discount.api/Dockerfile
+
