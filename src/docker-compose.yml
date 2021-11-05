@@ -41,3 +41,10 @@ services:
       context: .
       dockerfile: services/Discount/Discount.api/Dockerfile
 
+
+  discount.grpc:
+    image: ${DOCKER_REGISTRY-}discountgrpc
+    build:
+      context: .
+      dockerfile: services/Discount/Discount.grpc/Dockerfile
+

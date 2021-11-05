@@ -1,5 +1,6 @@
 ﻿using Basket.API.Entities;
 using Basket.API.Repositories;
+using Basket.API.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -12,9 +13,12 @@ namespace Basket.API.Controllers
     public class BasketController : ControllerBase
     {
         private readonly IRepository _repository;
-        public BasketController(IRepository repository)
+        private readonly FinalPriceService _priceService;
+
+        public BasketController(IRepository repository, FinalPriceService priceService)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _priceService = priceService ?? throw new ArgumentNullException(nameof(priceService));
         }
 
         [HttpGet]
@@ -34,6 +38,9 @@ namespace Basket.API.Controllers
             var result = await _repository.UpdateCart(cart);
             if (result is null)
                 return BadRequest("Cart Not Found");
+
+            await _priceService.UpdatePrices(result);
+
             return Ok(result);
         }
 

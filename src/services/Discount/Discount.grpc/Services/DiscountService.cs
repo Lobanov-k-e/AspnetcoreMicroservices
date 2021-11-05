@@ -15,10 +15,10 @@ namespace Discount.grpc.Services
     public class DiscountService : DiscountProtoService.DiscountProtoServiceBase
     {
         private readonly IRepository _repository;
-        private readonly ILogger _logger;
+        private readonly ILogger<DiscountService> _logger;
         private readonly IMapper _mapper;
 
-        public DiscountService(IRepository repository, ILogger logger, IMapper mapper)
+        public DiscountService(IRepository repository, ILogger<DiscountService> logger, IMapper mapper)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -29,7 +29,7 @@ namespace Discount.grpc.Services
         {
             var coupon = await _repository.GetCoupon(request.ProductName)
                 ?? throw new RpcException(new Status(StatusCode.NotFound, $"нет скидки для продукта {request.ProductName}"));
-            _logger.LogInformation($"discount for product {coupon.Id} successfully retrieved");
+            _logger.LogInformation($"discount for product {coupon.ProductName} successfully retrieved");
             return _mapper.Map<CouponModel>(coupon);
         }       
 
@@ -42,7 +42,7 @@ namespace Discount.grpc.Services
             if (!result)
                 throw new RpcException(new Status(StatusCode.Internal, "не удалось добавить скидку"));
 
-            _logger.LogInformation($"discount for product {coupon.Id} successfully created");
+            _logger.LogInformation($"discount for product {coupon.ProductName} successfully created");
 
             return _mapper.Map<CouponModel>(coupon);          
         }
@@ -55,7 +55,7 @@ namespace Discount.grpc.Services
             if (!result)
                 throw new RpcException(new Status(StatusCode.Internal, "не удалось обновить скидку"));
 
-            _logger.LogInformation($"discount for product {coupon.Id} successfully updated");
+            _logger.LogInformation($"discount for product {coupon.ProductName} successfully updated");
 
 
             return _mapper.Map<CouponModel>(coupon);

@@ -8,9 +8,8 @@
         public decimal Price { get; set; }
         public string Color { get; set; }
 
-        public decimal GetTotal()
-        {
-            return Price * Quantity;
-        }
+        public decimal GetTotal() => Price * Quantity;
+
+        public decimal ApplyDiscount(int amount) => Price -= amount;
     }
 }
