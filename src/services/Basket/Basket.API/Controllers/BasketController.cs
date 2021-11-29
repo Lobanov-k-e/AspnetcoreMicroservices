@@ -1,6 +1,9 @@
-﻿using Basket.API.Entities;
+﻿using AutoMapper;
+using Basket.API.Entities;
 using Basket.API.Repositories;
 using Basket.API.Services;
+using EventBus.Messages.Events;
+using MassTransit;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -14,11 +17,37 @@ namespace Basket.API.Controllers
     {
         private readonly IRepository _repository;
         private readonly FinalPriceService _priceService;
+        private readonly IMapper _mapper;
+        private readonly IPublishEndpoint _publishEndpoint;
 
-        public BasketController(IRepository repository, FinalPriceService priceService)
+        public BasketController(IRepository repository,
+            FinalPriceService priceService, 
+            IMapper mapper, 
+            IPublishEndpoint publishEndpoint)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _priceService = priceService ?? throw new ArgumentNullException(nameof(priceService));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
+        }
+
+        [HttpPost]
+        [Route("[action]", Name = "checkout")]
+        [ProducesResponseType(StatusCodes.Status202Accepted)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Checkout([FromBody] BasketCheckout basketCheckout)
+        {
+            var basket = await _repository.GetCart(basketCheckout.UserName);
+
+            if (basket is null)
+                return BadRequest();
+
+            var message = _mapper.Map<BasketCheckoutEvent>(basketCheckout);
+            message.TotalPrice = basket.TotalPrice;
+            await _publishEndpoint.Publish(message);                 
+
+            await _repository.RemoveCart(basketCheckout.UserName);
+            return Accepted();
         }
 
         [HttpGet]
@@ -35,12 +64,11 @@ namespace Basket.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> UpdateCart([FromBody] ShoppingCart cart)
         {
-            var result = await _repository.UpdateCart(cart);
-            if (result is null)
-                return BadRequest("Cart Not Found");
-
-            await _priceService.UpdatePrices(result);
-
+            if (cart is null)
+                return BadRequest();
+            await _priceService.UpdatePrices(cart);
+            var result = await _repository.UpdateOrCreateCart(cart);
+                              
             return Ok(result);
         }
 

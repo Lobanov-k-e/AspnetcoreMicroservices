@@ -6,8 +6,9 @@ EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /src
-COPY ["services/Basket/Basket.API/Basket.API.csproj", "services/Basket/Basket.API/"]
-RUN dotnet restore "services/Basket/Basket.API/Basket.API.csproj"
+COPY ["services/Basket/Basket.API/Basket.API.csproj", "Services/Basket/Basket.API/"]
+COPY ["common/EventBus.Messages/EventBus.Messages.csproj", "common/EventBus.Messages/"]
+RUN dotnet restore "Services/Basket/Basket.API/Basket.API.csproj"
 COPY . .
 WORKDIR "/src/services/Basket/Basket.API"
 RUN dotnet build "Basket.API.csproj" -c Release -o /app/build

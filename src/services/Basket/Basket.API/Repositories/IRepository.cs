@@ -6,7 +6,7 @@ namespace Basket.API.Repositories
     public interface IRepository
     {
         Task<ShoppingCart> GetCart(string userName);
-        Task<ShoppingCart> UpdateCart(ShoppingCart cart);
+        Task<ShoppingCart> UpdateOrCreateCart(ShoppingCart cart);
         Task RemoveCart(string userName);
     }
 }

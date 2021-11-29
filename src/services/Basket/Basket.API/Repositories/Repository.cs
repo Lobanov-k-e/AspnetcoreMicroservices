@@ -29,11 +29,12 @@ namespace Basket.API.Repositories
             await _cache.RemoveAsync(userName);
         }
 
-        public async Task<ShoppingCart> UpdateCart(ShoppingCart cart)
+        public async Task<ShoppingCart> UpdateOrCreateCart(ShoppingCart cart)
         {
             _ = cart ?? throw new ArgumentNullException(nameof(cart));
 
             await _cache.SetStringAsync(cart.UserName, JsonSerializer.Serialize(cart));
+
             return await GetCart(cart.UserName);
         }
     }
